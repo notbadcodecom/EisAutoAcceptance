@@ -22,18 +22,20 @@ class Report:
 
     def check_payer(self, payment):
         is_match = False
-        payer = payment.payer
-        debtor = payment.fine.debtor
+        payer = payment.payer.replace("Ё", "Е")
+        debtor = payment.fine.debtor.replace("Ё", "Е")
         code = payment.payer_code
-        if payer is not None and debtor is not None:
-            if payer.find(self.cfg["title"]["forced"]) != -1:
-                is_match = True
-            elif payer.find(debtor) != -1:
-                is_match = True
-            elif debtor.find(payer) != -1:
-                is_match = True
-            elif code == payment.fine.debtor_code and code != 0:
-                is_match = True
+        special_payers = self.cfg["title"]["special payers"].split(";")
+        if payer.find(special_payers[0]) != -1:
+            is_match = True
+        elif payer.find(special_payers[1]) != -1:
+            is_match = True
+        elif payer.find(debtor) != -1:
+            is_match = True
+        elif debtor.find(payer) != -1:
+            is_match = True
+        elif code == payment.fine.debtor_code and code != 0:
+            is_match = True
         return is_match
 
     def save_report(self):
@@ -73,22 +75,34 @@ class Report:
                 RegisterPayment.date == self.date
             )
 
-            i = 1
+            report_line = 1
             for payment in single_payments.objects():
-                worksheet.write(i, 0, payment.num, nums)
-                worksheet.write(i, 1, payment.amount, amount)
-                worksheet.write(i, 2, payment.fine.number, nums)
-                worksheet.write(i, 3, payment.payer, text)
-                worksheet.write(i, 4, payment.fine.debtor, text)
-                i += 1
+                if (
+                    payment.fine
+                    and payment.fine.debtor
+                    and not self.check_payer(payment)
+                ):
+                    worksheet.write(report_line, 0, payment.num, nums)
+                    worksheet.write(report_line, 1, payment.amount, amount)
+                    worksheet.write(report_line, 2, payment.fine.number, nums)
+                    worksheet.write(report_line, 3, payment.payer, text)
+                    worksheet.write(report_line, 4, payment.fine.debtor, text)
+                    report_line += 1
 
             for payment in register_payments.objects():
-                if not self.check_payer(payment):
+                if (
+                    payment.fine
+                    and payment.fine.debtor
+                    and not self.check_payer(payment)
+                ):
                     worksheet.write(
-                        i, 0, str(payment.num) + "/" + str(payment.payorder_id), nums
+                        report_line,
+                        0,
+                        str(payment.num) + "/" + str(payment.payorder_id),
+                        nums,
                     )
-                    worksheet.write(i, 1, payment.amount, amount)
-                    worksheet.write(i, 2, payment.fine.number, nums)
-                    worksheet.write(i, 3, payment.payer, text)
-                    worksheet.write(i, 4, payment.fine.debtor, text)
-                    i += 1
+                    worksheet.write(report_line, 1, payment.amount, amount)
+                    worksheet.write(report_line, 2, payment.fine.number, nums)
+                    worksheet.write(report_line, 3, payment.payer, text)
+                    worksheet.write(report_line, 4, payment.fine.debtor, text)
+                    report_line += 1

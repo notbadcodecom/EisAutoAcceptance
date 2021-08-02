@@ -74,5 +74,4 @@ class Day(Driver):
                 )
             )
         except TimeoutException:
-            pass
             self.quit()

@@ -43,8 +43,3 @@ class RegisterPayment(BasePayment):
     """Register payment model"""
 
     payorder_id = IntegerField()
-
-
-# Fine.create_table()
-# SinglePayment.create_table()
-# RegisterPayment.create_table()

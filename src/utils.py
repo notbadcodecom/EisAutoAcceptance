@@ -14,7 +14,7 @@ def choose_day():
         num = int(day[0:2])
         enum_days[num] = day
         print(str(num) + ")", day)
-    day = int(input(cfg["lang"]["choosing day"] + " "))
+    day = int(input(cfg["title"]["choosing day"] + " "))
     with open("config.ini", mode="w", encoding="utf-8") as config:
         cfg["dir"]["day"] = enum_days[day]
         cfg.write(config)

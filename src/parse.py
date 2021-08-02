@@ -1,6 +1,5 @@
 import codecs
 import datetime as dt
-import logging
 import os
 import re
 from configparser import ConfigParser
@@ -15,8 +14,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from src.auth import Day
 from src.models import Fine, RegisterPayment, SinglePayment
-
-logging.basicConfig(filename="log.txt", filemode="a", level=logging.ERROR)
 
 
 class RegisterParser:
@@ -36,7 +33,6 @@ class RegisterParser:
                     .find("Header")
                     .find("Report")
                 )
-        logging.info("Save register payments to DB")
 
     def parse_pay_data(self, register):
         identify = False
@@ -85,7 +81,7 @@ class PaymentsParser(Day):
     def __init__(self):
         super().__init__()
         self.open_day()
-        self.titles = self.cfg["titles"]["bank day"].split(";")
+        self.titles = self.cfg["title"]["bank day"].split(";")
         self.payments_tab = bs(self.driver.page_source, "lxml").find(
             "table", wicketpath="table"
         )
@@ -96,7 +92,7 @@ class PaymentsParser(Day):
             if tr.get("wicketpath")
         ]
         self.progress_bar = IncrementalBar(
-            self.cfg["lang"]["type"], max=len(self.payments)
+            self.cfg["title"]["type"], max=len(self.payments)
         )
 
     def determine_type(self, tag, code):

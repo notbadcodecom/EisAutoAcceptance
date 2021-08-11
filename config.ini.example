@@ -32,7 +32,7 @@ fine = \d{1}[-]\d{1}
 uin = [0][3][5][5]\d{21}
 
 [title]
-choosing day = Choosing
+choosing = Choosing
 type = Type
 single = Single
 register = Register
@@ -41,3 +41,9 @@ bank day = number;purpose;decision
 payment = number;debtor;debtor_code
 table = number;amount;decision;payer;debtor
 report = Reports
+list = doing list
+days list = day list
+day choosing = Choosing
+log in = System registration
+make report = Save report
+exit = Quit

@@ -196,52 +196,57 @@ class Receipting(Day):
                 (By.XPATH, '//*[@class="blockUI blockOverlay"]')
             )
         )
+        WebDriverWait(self.driver, 10).until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '//*[@wicketpath="decisionTable_body"]/tr/td[2]/div')
+            )
+        ).click()
+        WebDriverWait(self.driver, 10).until(
+            self.ElemHasClass(
+                (By.XPATH, '//*[@wicketpath="decisionTable_body"]/tr'),
+                " row-selected",
+            )
+        )
+        amount = self.payment.amount
+        if reg is not None:
+            amount = reg.amount
+        self.driver.find_element_by_name("amountDistributed").send_keys(
+            (str(amount)).replace(".", ",")
+        )
+        WebDriverWait(self.driver, 20).until(
+            ec.invisibility_of_element_located(
+                (By.XPATH, '//*[@class="blockUI blockOverlay"]')
+            )
+        )
+        self.driver.find_element_by_name("add").click()
+        WebDriverWait(self.driver, 60).until(
+            self.RequiredNumberElems(
+                (By.XPATH, '//*[@wicketpath="chargeTable_body"]'),
+                count,
+            )
+        )
         try:
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, 1).until(
                 ec.visibility_of_element_located(
-                    (By.XPATH, '//*[@wicketpath="decisionTable_body"]/tr/td[2]/div')
+                    (
+                        By.XPATH, 
+                        '//*[@wicketpath="messageWindow_content_buttonPanel_buttonRepeater_0_button"]'
+                    )
                 )
             ).click()
-            WebDriverWait(self.driver, 10).until(
-                self.ElemHasClass(
-                    (By.XPATH, '//*[@wicketpath="decisionTable_body"]/tr'),
-                    " row-selected",
-                )
-            )
-            amount = self.payment.amount
-            if reg is not None:
-                amount = reg.amount
-            self.driver.find_element_by_name("amountDistributed").send_keys(
-                (str(amount)).replace(".", ",")
-            )
-            WebDriverWait(self.driver, 20).until(
-                ec.invisibility_of_element_located(
-                    (By.XPATH, '//*[@class="blockUI blockOverlay"]')
-                )
-            )
-            self.driver.find_element_by_name("add").click()
-            WebDriverWait(self.driver, 60).until(
-                self.RequiredNumberElems(
-                    (By.XPATH, '//*[@wicketpath="chargeTable_body"]'),
-                    count,
-                )
-            )
-
-        except (
-            ElementClickInterceptedException,
-            TimeoutException,
-            StaleElementReferenceException,
-            WebDriverException,
-        ) as err:
-            print(err)
+        except TimeoutException:
+            pass
 
     def save_payment(self):
         self.driver.find_element_by_name("save").click()
-        WebDriverWait(self.driver, 10).until(
-            ec.presence_of_element_located(
-                (By.NAME, "table:body:rows:1:cells:1:cell:columnEditorDiv:comp")
+        try:
+            WebDriverWait(self.driver, 1).until(
+                ec.presence_of_element_located(
+                    (By.NAME, "table:body:rows:1:cells:1:cell:columnEditorDiv:comp")
+                )
             )
-        )
+        except TimeoutException:
+            pass
 
     def exit_receipting(self):
         self.payment.is_taken = True

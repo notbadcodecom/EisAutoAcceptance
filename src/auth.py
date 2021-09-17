@@ -15,8 +15,8 @@ class Driver:
         options.add_argument("--disable-extensions")
         options.add_argument("--disable-gpu")
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        if hidden:
-            options.add_argument("--headless")
+        # if hidden:
+        #     options.add_argument("--headless")
         self.driver = webdriver.Chrome("chromedriver.exe", options=options)
         self.cfg = ConfigParser()
         self.cfg.read_file(codecs.open("config.ini", "r", "utf-8"))

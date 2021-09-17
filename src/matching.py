@@ -1,6 +1,7 @@
 import codecs
 import datetime as dt
 import re
+import time
 from configparser import ConfigParser
 
 from bs4 import BeautifulSoup as bs
@@ -181,14 +182,15 @@ class Receipting(Day):
         for i, tag in enumerate(table.thead.tr.findChildren("th")):
             if tag.text in titles:
                 titles_id[tag.text] = i
-        for num, tag in enumerate(table.tbody.tr.findChildren("td")):
-            if titles_id[titles[0]] == num:
-                payment.fine.number = tag.text.strip()
-            elif titles_id[titles[1]] == num:
-                payment.fine.debtor = tag.text.strip().upper()
-            elif titles_id[titles[2]] == num:
-                payment.fine.debtor_code = tag.text.strip()
-        payment.fine.save()
+        if payment.fine is not None:
+            for num, tag in enumerate(table.tbody.tr.findChildren("td")):
+                if titles_id[titles[0]] == num:
+                    payment.fine.number = tag.text.strip()
+                elif titles_id[titles[1]] == num:
+                    payment.fine.debtor = tag.text.strip().upper()
+                elif titles_id[titles[2]] == num:
+                    payment.fine.debtor_code = tag.text.strip()
+            payment.fine.save()
 
     def add_founded_fine(self, count=1, reg=None):
         WebDriverWait(self.driver, 20).until(
@@ -219,12 +221,6 @@ class Receipting(Day):
             )
         )
         self.driver.find_element_by_name("add").click()
-        WebDriverWait(self.driver, 60).until(
-            self.RequiredNumberElems(
-                (By.XPATH, '//*[@wicketpath="chargeTable_body"]'),
-                count,
-            )
-        )
         try:
             WebDriverWait(self.driver, 1).until(
                 ec.visibility_of_element_located(
@@ -236,6 +232,15 @@ class Receipting(Day):
             ).click()
         except TimeoutException:
             pass
+        if count < 30:
+            WebDriverWait(self.driver, 60).until(
+                self.RequiredNumberElems(
+                    (By.XPATH, '//*[@wicketpath="chargeTable_body"]'),
+                    count,
+                )
+            )
+        else:
+            time.sleep(15)
 
     def save_payment(self):
         self.driver.find_element_by_name("save").click()
@@ -274,7 +279,16 @@ class RegisterReceipting(Receipting):
     def fill(self, reg):
         self.uin_elem.clear()
         self.driver.find_element_by_name("decisionNum").clear()
-        if reg.fine.uin:
+        if not reg.fine:
+            if self.charge_uin.is_selected():
+                WebDriverWait(self.driver, 20).until(
+                    ec.invisibility_of_element_located(
+                        (By.XPATH, '//*[@class="blockUI blockOverlay"]')
+                    )
+                )
+                self.charge_uin.click()
+            self.driver.find_element_by_name("decisionNum").send_keys("09-61")
+        elif reg.fine.uin:
             if not self.charge_uin.is_selected():
                 WebDriverWait(self.driver, 20).until(
                     ec.invisibility_of_element_located(
@@ -299,6 +313,18 @@ class RegisterReceipting(Receipting):
             )
         )
         return False
+
+    def save_payment(self):
+        time_sleep = len(self.reg_payments) * 0.5
+        self.driver.find_element_by_name("save").click()
+        try:
+            WebDriverWait(self.driver, time_sleep).until(
+                ec.presence_of_element_located(
+                    (By.NAME, "table:body:rows:1:cells:1:cell:columnEditorDiv:comp")
+                )
+            )
+        except TimeoutException:
+            pass
 
     def exit_receipting(self):
         self.payment.save()

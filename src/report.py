@@ -22,20 +22,21 @@ class Report:
 
     def check_payer(self, payment):
         is_match = False
-        payer = payment.payer.replace("Ё", "Е")
-        debtor = payment.fine.debtor.replace("Ё", "Е")
-        code = payment.payer_code
-        special_payers = self.cfg["title"]["special payers"].split(";")
-        if payer.find(special_payers[0]) != -1:
-            is_match = True
-        elif payer.find(special_payers[1]) != -1:
-            is_match = True
-        elif payer.find(debtor) != -1:
-            is_match = True
-        elif debtor.find(payer) != -1:
-            is_match = True
-        elif code == payment.fine.debtor_code and code != 0:
-            is_match = True
+        if payment.payer:
+            payer = payment.payer.replace("Ё", "Е")
+            debtor = payment.fine.debtor.replace("Ё", "Е")
+            code = payment.payer_code
+            special_payers = self.cfg["title"]["special payers"].split(";")
+            if payer.find(special_payers[0]) != -1:
+                is_match = True
+            elif payer.find(special_payers[1]) != -1:
+                is_match = True
+            elif payer.find(debtor) != -1:
+                is_match = True
+            elif debtor.find(payer) != -1:
+                is_match = True
+            elif code == payment.fine.debtor_code and code != 0:
+                is_match = True
         return is_match
 
     def save_report(self):

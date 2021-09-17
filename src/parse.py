@@ -20,10 +20,10 @@ class RegisterParser:
     def __init__(self):
         self.cfg = ConfigParser()
         self.cfg.read_file(codecs.open("config.ini", "r", "utf-8"))
-        months = os.listdir(self.cfg["dir"]["year"])
-        self.regs = f"{self.cfg['dir']['year']}\\{months[len(months)-1]}\\{self.cfg['dir']['day']}"
 
     def open_xml_files(self):
+        months = os.listdir(self.cfg["dir"]["year"])
+        self.regs = f"{self.cfg['dir']['year']}\\{months[len(months)-1]}\\{self.cfg['dir']['day']}"
         for reg in [reg for reg in os.listdir(self.regs) if reg[-4:] == ".XML"]:
             with open(f"{self.regs}\\{reg}", "r", encoding="utf-8") as xml:
                 self.parse_pay_data(

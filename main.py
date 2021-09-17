@@ -25,7 +25,7 @@ class Menu:
         }
 
     def show(self):
-        os.system("cls||clear")
+        # os.system("cls||clear")
         self.table = PrettyTable()
         self.table.field_names = ["№", self.cfg["title"]["list"]]
         self.table.align = "l"
